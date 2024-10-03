@@ -3,36 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <title>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</title>
-    <!-- เชื่อมโยงไฟล์ CSS -->
+    <!-- Meta viewport tag for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CSS Styles -->
     <style>
         body {
             font-family: 'Prompt', sans-serif;
             background-color: #f0f2f5;
             margin: 0;
             padding: 0;
-            font-size: 18px;
+            font-size: 16px;
         }
         .container {
             max-width: 800px;
-            margin: 50px auto;
+            margin: 30px auto;
             background-color: #ffffff;
-            padding: 40px;
+            padding: 30px;
             border-radius: 8px;
+            box-sizing: border-box;
         }
         h1, h2, h3 {
             color: #333333;
+            margin: 0 0 20px 0;
         }
         h1 {
             text-align: center;
+            font-size: 2rem;
             margin-bottom: 30px;
-            font-size: 36px;
         }
         label {
             display: block;
             margin-top: 20px;
             font-weight: 600;
             color: #555555;
-            font-size: 20px;
+            font-size: 1rem;
         }
         input[type="text"], select {
             width: 100%;
@@ -41,10 +47,10 @@
             border: 1px solid #cccccc;
             border-radius: 4px;
             box-sizing: border-box;
-            font-size: 20px;
+            font-size: 1rem;
         }
         .info {
-            font-size: 16px;
+            font-size: 0.9rem;
             color: #777777;
         }
         button {
@@ -55,8 +61,9 @@
             color: #ffffff;
             border: none;
             border-radius: 4px;
-            font-size: 22px;
+            font-size: 1.2rem;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #0056b3;
@@ -86,25 +93,26 @@
         }
         .navigation-buttons {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 15px;
             margin-top: 30px;
         }
         .navigation-buttons button {
-            width: 48%;
+            width: 100%;
         }
         .error {
             color: red;
-            font-size: 16px;
+            font-size: 0.9rem;
         }
         input[type="checkbox"] {
             margin-right: 10px;
-            transform: scale(1.5);
+            transform: scale(1.2);
         }
         .checkbox-group {
             display: flex;
             align-items: center;
             margin-top: 10px;
-            font-size: 20px;
+            font-size: 1rem;
         }
         /* Result Section */
         #result-section {
@@ -112,21 +120,64 @@
         }
         #result-section h2 {
             color: #28a745;
-            font-size: 28px;
+            font-size: 1.8rem;
             margin-top: 0;
         }
         #result-section p {
-            font-size: 22px;
+            font-size: 1.2rem;
             color: #333333;
         }
         #result-section .tax-amount {
-            font-size: 36px;
+            font-size: 2rem;
             color: #d9534f;
             font-weight: bold;
         }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 20px auto;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            button {
+                font-size: 1rem;
+            }
+            label {
+                font-size: 0.9rem;
+            }
+            input[type="text"], select {
+                font-size: 0.9rem;
+            }
+            .checkbox-group {
+                font-size: 0.9rem;
+            }
+            .info {
+                font-size: 0.8rem;
+            }
+        }
+        @media (max-width: 480px) {
+            body {
+                font-size: 14px;
+            }
+            .container {
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            button {
+                font-size: 0.9rem;
+            }
+            .navigation-buttons {
+                flex-direction: column;
+            }
+            .navigation-buttons button {
+                width: 100%;
+            }
+        }
     </style>
-    <!-- โหลดฟอนต์จาก Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -150,15 +201,15 @@
 
             <div id="annual_income_section" style="display: none;">
                 <label>รายได้ทั้งปีของคุณ (บาท): <span class="error" id="annual_income_error"></span></label>
-                <input type="text" id="annual_income">
+                <input type="text" id="annual_income" inputmode="numeric" pattern="[0-9]*">
             </div>
 
             <div id="monthly_income_section" style="display: none;">
                 <label>รายได้ต่อเดือนของคุณ (บาท): <span class="error" id="monthly_income_error"></span></label>
-                <input type="text" id="monthly_income">
+                <input type="text" id="monthly_income" inputmode="numeric" pattern="[0-9]*">
 
                 <label>โบนัสที่ได้รับในปีนี้ (บาท):</label>
-                <input type="text" id="bonus_income" value="0">
+                <input type="text" id="bonus_income" value="0" inputmode="numeric" pattern="[0-9]*">
             </div>
 
             <div class="navigation-buttons">
@@ -197,12 +248,12 @@
 
                 <label>จำนวนบุตร:</label>
                 <select id="children">
-                    <!-- ตัวเลือกจำนวนบุตรจะถูกสร้างโดย JavaScript -->
+                    <!-- Options will be generated by JavaScript -->
                 </select>
                 <div class="info">ลดหย่อนบุตรคนละ 30,000 บาท สำหรับบุตรคนที่ 1 และ 60,000 บาท สำหรับบุตรคนที่ 2 ขึ้นไป</div>
 
                 <label>เงินสมทบประกันสังคมที่จ่ายจริง (บาท):</label>
-                <input type="text" id="social_security" value="0">
+                <input type="text" id="social_security" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 9,000 บาท</div>
             </div>
 
@@ -210,15 +261,15 @@
                 <h3>ค่าลดหย่อนเบี้ยประกันและการออม</h3>
 
                 <label>เบี้ยประกันชีวิต (บาท):</label>
-                <input type="text" id="life_insurance" value="0">
+                <input type="text" id="life_insurance" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
 
                 <label>เบี้ยประกันสุขภาพ (บาท):</label>
-                <input type="text" id="health_insurance" value="0">
+                <input type="text" id="health_insurance" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 25,000 บาท</div>
 
                 <label>เบี้ยประกันชีวิตแบบบำนาญ (บาท):</label>
-                <input type="text" id="pension_insurance" value="0">
+                <input type="text" id="pension_insurance" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ 15% ของรายได้ สูงสุดไม่เกิน 200,000 บาท</div>
             </div>
 
@@ -226,19 +277,19 @@
                 <h3>ค่าลดหย่อนเพื่อการลงทุน</h3>
 
                 <label>กองทุนรวมเพื่อการออม (SSF) (บาท):</label>
-                <input type="text" id="ssf" value="0">
+                <input type="text" id="ssf" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ 30% ของรายได้ สูงสุดไม่เกิน 200,000 บาท</div>
 
                 <label>กองทุนรวมเพื่อการเลี้ยงชีพ (RMF) (บาท):</label>
-                <input type="text" id="rmf" value="0">
+                <input type="text" id="rmf" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ 30% ของรายได้ สูงสุดไม่เกิน 500,000 บาท</div>
 
                 <label>กองทุนสำรองเลี้ยงชีพ (PVD) (บาท):</label>
-                <input type="text" id="pvd" value="0">
+                <input type="text" id="pvd" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ 15% ของรายได้ สูงสุดไม่เกิน 500,000 บาท</div>
 
                 <label>กองทุนรวม ThaiESG (บาท):</label>
-                <input type="text" id="thaiesg" value="0">
+                <input type="text" id="thaiesg" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ 30% ของรายได้ สูงสุดไม่เกิน 300,000 บาท</div>
             </div>
 
@@ -246,11 +297,11 @@
                 <h3>ค่าลดหย่อนอื่น ๆ</h3>
 
                 <label>ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย (บาท):</label>
-                <input type="text" id="home_loan_interest" value="0">
+                <input type="text" id="home_loan_interest" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
 
                 <label>เงินบริจาคทั่วไป (บาท):</label>
-                <input type="text" id="donation" value="0">
+                <input type="text" id="donation" value="0" inputmode="numeric" pattern="[0-9]*">
                 <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 10% ของเงินได้หลังหักลดหย่อน</div>
             </div>
 
@@ -275,17 +326,18 @@
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
-        // ตัวแปรสำหรับเก็บข้อมูล
+        // Variables to store data
         let total_income = 0;
         let expense = 0;
 
-        // ฟังก์ชันสำหรับแสดงผลคอมม่าในตัวเลข
+        // Function to format numbers with commas
         function formatNumber(num) {
             return num.toLocaleString('en-US', {maximumFractionDigits: 0});
         }
 
-        // ฟังก์ชันสำหรับแปลงสตริงที่มีคอมม่าเป็นตัวเลข
+        // Function to parse numbers from strings with commas
         function parseNumber(str) {
             if (typeof str === 'string') {
                 return parseFloat(str.replace(/,/g, '')) || 0;
@@ -293,10 +345,10 @@
             return 0;
         }
 
-        // ฟังก์ชันสำหรับเพิ่มคอมม่าขณะกรอกข้อมูล
+        // Function to add comma while typing
         function addCommaEvent(id) {
             let input = document.getElementById(id);
-            input.addEventListener('keyup', function(e) {
+            input.addEventListener('input', function(e) {
                 let cursorPosition = this.selectionStart;
                 let value = this.value.replace(/,/g, '');
                 if (!isNaN(value) && value !== '') {
@@ -310,13 +362,13 @@
             });
         }
 
-        // เพิ่มคอมม่าขณะกรอกข้อมูลสำหรับทุกช่อง
+        // Add comma event to all numeric fields
         let numberFields = ['annual_income', 'monthly_income', 'bonus_income', 'social_security', 'life_insurance', 'health_insurance', 'pension_insurance', 'ssf', 'rmf', 'pvd', 'thaiesg', 'home_loan_interest', 'donation'];
         numberFields.forEach(function(id) {
             addCommaEvent(id);
         });
 
-        // การจัดการการเลือกประเภทของรายได้
+        // Handle income type selection
         let incomeTypeCheckboxes = document.querySelectorAll('input[name="income_type"]');
         incomeTypeCheckboxes.forEach(function(checkbox) {
             checkbox.addEventListener('change', function() {
@@ -339,10 +391,10 @@
             });
         });
 
-        // ฟังก์ชันสำหรับไปยังขั้นตอนถัดไป
+        // Function to proceed to the next step
         function nextStep(currentStep) {
             if (currentStep === 1) {
-                // ตรวจสอบว่าผู้ใช้เลือกประเภทของรายได้หรือไม่
+                // Validate income type selection
                 let incomeTypeSelected = false;
                 let incomeType = '';
                 incomeTypeCheckboxes.forEach(function(checkbox) {
@@ -359,7 +411,7 @@
                     document.getElementById('income_type_error').innerText = '';
                 }
 
-                // รับข้อมูลรายได้
+                // Get income data
                 if (incomeType === 'annual') {
                     let annual_income = parseNumber(document.getElementById('annual_income').value);
                     if (annual_income === 0) {
@@ -381,35 +433,39 @@
                     total_income = (monthly_income * 12) + bonus_income;
                 }
 
-                // คำนวณค่าใช้จ่ายหักเหมา 50% แต่ไม่เกิน 100,000 บาท
+                // Calculate expense deduction
                 expense = total_income * 0.50;
                 if (expense > 100000) expense = 100000;
 
-                // แสดงผลค่าใช้จ่ายที่หักได้
+                // Display expense deduction
                 document.getElementById('expense_display').innerText = formatNumber(expense);
 
-                // ไปยังขั้นตอนที่ 2
+                // Proceed to step 2
                 document.getElementById('step-1').classList.remove('active');
                 document.getElementById('step-2').classList.add('active');
+                window.scrollTo(0, 0);
             } else if (currentStep === 2) {
-                // ไปยังขั้นตอนที่ 3
+                // Proceed to step 3
                 document.getElementById('step-2').classList.remove('active');
                 document.getElementById('step-3').classList.add('active');
+                window.scrollTo(0, 0);
             }
         }
 
-        // ฟังก์ชันสำหรับย้อนกลับไปยังขั้นตอนก่อนหน้า
+        // Function to go back to the previous step
         function prevStep(currentStep) {
             if (currentStep === 2) {
                 document.getElementById('step-2').classList.remove('active');
                 document.getElementById('step-1').classList.add('active');
+                window.scrollTo(0, 0);
             } else if (currentStep === 3) {
                 document.getElementById('step-3').classList.remove('active');
                 document.getElementById('step-2').classList.add('active');
+                window.scrollTo(0, 0);
             }
         }
 
-        // สร้างตัวเลือกจำนวนบุตรใน Dropdown
+        // Populate children options
         function populateChildrenOptions() {
             const childrenSelect = document.getElementById('children');
             for (let i = 0; i <= 10; i++) {
@@ -423,14 +479,14 @@
             }
         }
 
-        // เรียกใช้ฟังก์ชันเมื่อโหลดหน้าเสร็จ
+        // Call function on window load
         window.onload = function() {
             populateChildrenOptions();
         };
 
-        // ฟังก์ชันสำหรับคำนวณภาษี
+        // Function to calculate tax
         function calculateTax() {
-            // ค่าลดหย่อน
+            // Allowances
             let personal_allowance = 60000;
             let spouse = document.getElementById('spouse').value;
             let spouse_allowance = (spouse === 'yes') ? 60000 : 0;
@@ -445,7 +501,7 @@
                 }
             }
 
-            // ค่าลดหย่อนอื่น ๆ
+            // Other deductions
             let social_security = parseNumber(document.getElementById('social_security').value);
             if (social_security > 9000) social_security = 9000;
 
@@ -456,7 +512,7 @@
             if (health_insurance > 25000) health_insurance = 25000;
 
             let pension_insurance = parseNumber(document.getElementById('pension_insurance').value);
-            // จำกัด 15% ของรายได้ ไม่เกิน 200,000 บาท
+            // Limit to 15% of income, max 200,000
             let pension_limit = total_income * 0.15;
             if (pension_insurance > pension_limit) pension_insurance = pension_limit;
             if (pension_insurance > 200000) pension_insurance = 200000;
@@ -465,12 +521,12 @@
             let rmf = parseNumber(document.getElementById('rmf').value);
             let pvd = parseNumber(document.getElementById('pvd').value);
             let thaiesg = parseNumber(document.getElementById('thaiesg').value);
-            // ตรวจสอบแต่ละกองทุนตามเพดานของมัน
+            // Limit each fund
             ssf = Math.min(ssf, total_income * 0.30, 200000);
             rmf = Math.min(rmf, total_income * 0.30, 500000);
             thaiesg = Math.min(thaiesg, total_income * 0.30, 300000);
             pvd = Math.min(pvd, total_income * 0.15, 500000);
-            // รวมการลงทุน
+            // Total investment
             let investment_total = ssf + rmf + pvd + thaiesg;
             let investment_limit = total_income * 0.30;
             if (investment_total > investment_limit) investment_total = investment_limit;
@@ -481,11 +537,11 @@
 
             let total_deductions = expense + personal_allowance + spouse_allowance + child_allowance + social_security + life_insurance + health_insurance + pension_insurance + investment_total + home_loan_interest;
 
-            // เงินได้หลังหักลดหย่อนเบื้องต้น
+            // Taxable income before donation
             let taxable_income = total_income - total_deductions;
             if (taxable_income < 0) taxable_income = 0;
 
-            // คำนวณค่าลดหย่อนเงินบริจาค (ไม่เกิน 10% ของเงินได้หลังหักลดหย่อน)
+            // Donation deduction (up to 10% of taxable income)
             let donation = parseNumber(document.getElementById('donation').value);
             let donation_limit = taxable_income * 0.10;
             if (donation > donation_limit) {
@@ -494,11 +550,11 @@
 
             total_deductions += donation;
 
-            // เงินได้สุทธิ
+            // Net income
             let net_income = total_income - total_deductions;
             if (net_income < 0) net_income = 0;
 
-            // คำนวณภาษี
+            // Calculate tax
             let tax = 0;
             if (net_income <= 150000) {
                 tax = 0;
@@ -518,27 +574,27 @@
                 tax = ((net_income - 5000000) * 0.35) + 1265000;
             }
 
-            // แสดงผลใน Result Section
+            // Display results
             document.getElementById('result_total_income').innerText = formatNumber(total_income);
             document.getElementById('result_expense').innerText = formatNumber(expense);
             document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
             document.getElementById('result_net_income').innerText = formatNumber(net_income);
             document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
 
-            // แสดง Result Section และซ่อนขั้นตอนอื่น ๆ
+            // Show result section
             document.getElementById('step-3').classList.remove('active');
             document.getElementById('result-section').style.display = 'block';
             window.scrollTo(0, 0);
         }
 
-        // ฟังก์ชันสำหรับแก้ไขข้อมูล
+        // Function to edit data
         function editData() {
             document.getElementById('result-section').style.display = 'none';
             document.getElementById('step-1').classList.add('active');
             window.scrollTo(0, 0);
         }
 
-        // ฟังก์ชันสำหรับเริ่มใหม่
+        // Function to reset data
         function resetData() {
             location.reload();
         }
