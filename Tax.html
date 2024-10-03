@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</title>
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            font-size: 18px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 8px;
+        }
+        h1, h2, h3 {
+            color: #333333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 36px;
+        }
+        label {
+            display: block;
+            margin-top: 20px;
+            font-weight: 600;
+            color: #555555;
+            font-size: 20px;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 20px;
+        }
+        .info {
+            font-size: 16px;
+            color: #777777;
+        }
+        button {
+            margin-top: 30px;
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .deduction-section {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        .section-personal {
+            background-color: #fef9e7;
+        }
+        .section-insurance {
+            background-color: #e8f8f5;
+        }
+        .section-investment {
+            background-color: #e0f7fa;
+        }
+        .section-other {
+            background-color: #fdebd0;
+        }
+        .step {
+            display: none;
+        }
+        .step.active {
+            display: block;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .navigation-buttons button {
+            width: 48%;
+        }
+        .error {
+            color: red;
+            font-size: 16px;
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.5);
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 20px;
+        }
+        /* Result Section */
+        #result-section {
+            display: none;
+        }
+        #result-section h2 {
+            color: #28a745;
+            font-size: 28px;
+            margin-top: 0;
+        }
+        #result-section p {
+            font-size: 22px;
+            color: #333333;
+        }
+        #result-section .tax-amount {
+            font-size: 36px;
+            color: #d9534f;
+            font-weight: bold;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <h1>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</h1>
+
+        <!-- Step 1: รายได้ -->
+        <div class="step active" id="step-1">
+            <h2>ขั้นตอนที่ 1: รายได้</h2>
+
+            <label>เลือกรูปแบบการกรอกข้อมูลรายได้:</label>
+            <div class="checkbox-group">
+                <input type="checkbox" id="income_type_annual" name="income_type" value="annual">
+                <label for="income_type_annual">รายได้รวมทั้งปี</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="income_type_monthly" name="income_type" value="monthly">
+                <label for="income_type_monthly">รายได้ต่อเดือน</label>
+            </div>
+            <div id="income_type_error" class="error"></div>
+
+            <div id="annual_income_section" style="display: none;">
+                <label>รายได้ทั้งปีของคุณ (บาท): <span class="error" id="annual_income_error"></span></label>
+                <input type="text" id="annual_income">
+            </div>
+
+            <div id="monthly_income_section" style="display: none;">
+                <label>รายได้ต่อเดือนของคุณ (บาท): <span class="error" id="monthly_income_error"></span></label>
+                <input type="text" id="monthly_income">
+
+                <label>โบนัสที่ได้รับในปีนี้ (บาท):</label>
+                <input type="text" id="bonus_income" value="0">
+            </div>
+
+            <div class="navigation-buttons">
+                <button onclick="nextStep(1)">ถัดไป</button>
+            </div>
+        </div>
+
+        <!-- Step 2: ค่าใช้จ่าย -->
+        <div class="step" id="step-2">
+            <h2>ขั้นตอนที่ 2: ค่าใช้จ่าย</h2>
+            <p>ค่าใช้จ่ายหักเหมา 50% แต่ไม่เกิน 100,000 บาท จากรายได้รวมของคุณ</p>
+            <p>ค่าใช้จ่ายที่หักได้ของคุณคือ: <span id="expense_display">0</span> บาท</p>
+
+            <div class="navigation-buttons">
+                <button onclick="prevStep(2)">ย้อนกลับ</button>
+                <button onclick="nextStep(2)">ถัดไป</button>
+            </div>
+        </div>
+
+        <!-- Step 3: ค่าลดหย่อน -->
+        <div class="step" id="step-3">
+            <h2>ขั้นตอนที่ 3: ค่าลดหย่อน</h2>
+
+            <div class="deduction-section section-personal">
+                <h3>ค่าลดหย่อนส่วนตัวและครอบครัว</h3>
+
+                <label>ค่าลดหย่อนส่วนตัว:</label>
+                <p>60,000 บาท</p>
+
+                <label>คุณมีคู่สมรสที่ไม่มีรายได้หรือไม่?</label>
+                <select id="spouse">
+                    <option value="no">ไม่มี</option>
+                    <option value="yes">มี</option>
+                </select>
+                <div class="info">ลดหย่อนได้ 60,000 บาท ถ้าคู่สมรสไม่มีรายได้</div>
+
+                <label>จำนวนบุตร:</label>
+                <select id="children">
+                    <!-- ตัวเลือกจำนวนบุตรจะถูกสร้างโดย JavaScript -->
+                </select>
+                <div class="info">ลดหย่อนบุตรคนละ 30,000 บาท สำหรับบุตรคนที่ 1 และ 60,000 บาท สำหรับบุตรคนที่ 2 ขึ้นไป</div>
+
+                <label>เงินสมทบประกันสังคมที่จ่ายจริง (บาท):</label>
+                <input type="text" id="social_security" value="0">
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 9,000 บาท</div>
+            </div>
+
+            <div class="deduction-section section-insurance">
+                <h3>ค่าลดหย่อนเบี้ยประกันและการออม</h3>
+
+                <label>เบี้ยประกันชีวิต (บาท):</label>
+                <input type="text" id="life_insurance" value="0">
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
+
+                <label>เบี้ยประกันสุขภาพ (บาท):</label>
+                <input type="text" id="health_insurance" value="0">
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 25,000 บาท</div>
+
+                <label>เบี้ยประกันชีวิตแบบบำนาญ (บาท):</label>
+                <input type="text" id="pension_insurance" value="0">
+                <div class="info">ลดหย่อนได้ 15% ของรายได้ สูงสุดไม่เกิน 200,000 บาท</div>
+            </div>
+
+            <div class="deduction-section section-investment">
+                <h3>ค่าลดหย่อนเพื่อการลงทุน</h3>
+
+                <label>กองทุนรวมเพื่อการออม (SSF) (บาท):</label>
+                <input type="text" id="ssf" value="0">
+                <div class="info">ลดหย่อนได้ 30% ของรายได้ สูงสุดไม่เกิน 200,000 บาท</div>
+
+                <label>กองทุนรวมเพื่อการเลี้ยงชีพ (RMF) (บาท):</label>
+                <input type="text" id="rmf" value="0">
+                <div class="info">ลดหย่อนได้ 30% ของรายได้ สูงสุดไม่เกิน 500,000 บาท</div>
+
+                <label>กองทุนสำรองเลี้ยงชีพ (PVD) (บาท):</label>
+                <input type="text" id="pvd" value="0">
+                <div class="info">ลดหย่อนได้ 15% ของรายได้ สูงสุดไม่เกิน 500,000 บาท</div>
+
+                <label>กองทุนรวม ThaiESG (บาท):</label>
+                <input type="text" id="thaiesg" value="0">
+                <div class="info">ลดหย่อนได้ 30% ของรายได้ สูงสุดไม่เกิน 300,000 บาท</div>
+            </div>
+
+            <div class="deduction-section section-other">
+                <h3>ค่าลดหย่อนอื่น ๆ</h3>
+
+                <label>ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย (บาท):</label>
+                <input type="text" id="home_loan_interest" value="0">
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
+
+                <label>เงินบริจาคทั่วไป (บาท):</label>
+                <input type="text" id="donation" value="0">
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 10% ของเงินได้หลังหักลดหย่อน</div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button onclick="prevStep(3)">ย้อนกลับ</button>
+                <button onclick="calculateTax()">คำนวณภาษี</button>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result-section">
+            <h2>สรุปผลการคำนวณ</h2>
+            <p><strong>รายได้ทั้งปี:</strong> <span id="result_total_income">0</span> บาท</p>
+            <p><strong>ค่าใช้จ่ายที่หักได้:</strong> <span id="result_expense">0</span> บาท</p>
+            <p><strong>ค่าลดหย่อน:</strong> <span id="result_deductions">0</span> บาท</p>
+            <p><strong>เงินได้สุทธิ:</strong> <span id="result_net_income">0</span> บาท</p>
+            <p><strong>ภาษีที่ต้องชำระ:</strong> <span class="tax-amount" id="result_tax">0 บาท</span></p>
+            <div class="navigation-buttons">
+                <button onclick="editData()">แก้ไขข้อมูล</button>
+                <button onclick="resetData()">เริ่มใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ตัวแปรสำหรับเก็บข้อมูล
+        let total_income = 0;
+        let expense = 0;
+
+        // ฟังก์ชันสำหรับแสดงผลคอมม่าในตัวเลข
+        function formatNumber(num) {
+            return num.toLocaleString('en-US', {maximumFractionDigits: 0});
+        }
+
+        // ฟังก์ชันสำหรับแปลงสตริงที่มีคอมม่าเป็นตัวเลข
+        function parseNumber(str) {
+            if (typeof str === 'string') {
+                return parseFloat(str.replace(/,/g, '')) || 0;
+            }
+            return 0;
+        }
+
+        // ฟังก์ชันสำหรับเพิ่มคอมม่าขณะกรอกข้อมูล
+        function addCommaEvent(id) {
+            let input = document.getElementById(id);
+            input.addEventListener('keyup', function(e) {
+                let cursorPosition = this.selectionStart;
+                let value = this.value.replace(/,/g, '');
+                if (!isNaN(value) && value !== '') {
+                    let formattedValue = formatNumber(parseFloat(value));
+                    this.value = formattedValue;
+                    let diff = this.value.length - value.length;
+                    this.selectionEnd = cursorPosition + diff;
+                } else {
+                    this.value = '';
+                }
+            });
+        }
+
+        // เพิ่มคอมม่าขณะกรอกข้อมูลสำหรับทุกช่อง
+        let numberFields = ['annual_income', 'monthly_income', 'bonus_income', 'social_security', 'life_insurance', 'health_insurance', 'pension_insurance', 'ssf', 'rmf', 'pvd', 'thaiesg', 'home_loan_interest', 'donation'];
+        numberFields.forEach(function(id) {
+            addCommaEvent(id);
+        });
+
+        // การจัดการการเลือกประเภทของรายได้
+        let incomeTypeCheckboxes = document.querySelectorAll('input[name="income_type"]');
+        incomeTypeCheckboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                incomeTypeCheckboxes.forEach(function(box) {
+                    if (box !== this) {
+                        box.checked = false;
+                    }
+                }, this);
+
+                if (this.value === 'annual' && this.checked) {
+                    document.getElementById('annual_income_section').style.display = 'block';
+                    document.getElementById('monthly_income_section').style.display = 'none';
+                } else if (this.value === 'monthly' && this.checked) {
+                    document.getElementById('annual_income_section').style.display = 'none';
+                    document.getElementById('monthly_income_section').style.display = 'block';
+                } else {
+                    document.getElementById('annual_income_section').style.display = 'none';
+                    document.getElementById('monthly_income_section').style.display = 'none';
+                }
+            });
+        });
+
+        // ฟังก์ชันสำหรับไปยังขั้นตอนถัดไป
+        function nextStep(currentStep) {
+            if (currentStep === 1) {
+                // ตรวจสอบว่าผู้ใช้เลือกประเภทของรายได้หรือไม่
+                let incomeTypeSelected = false;
+                let incomeType = '';
+                incomeTypeCheckboxes.forEach(function(checkbox) {
+                    if (checkbox.checked) {
+                        incomeTypeSelected = true;
+                        incomeType = checkbox.value;
+                    }
+                });
+
+                if (!incomeTypeSelected) {
+                    document.getElementById('income_type_error').innerText = 'กรุณาเลือกประเภทของรายได้';
+                    return;
+                } else {
+                    document.getElementById('income_type_error').innerText = '';
+                }
+
+                // รับข้อมูลรายได้
+                if (incomeType === 'annual') {
+                    let annual_income = parseNumber(document.getElementById('annual_income').value);
+                    if (annual_income === 0) {
+                        document.getElementById('annual_income_error').innerText = 'กรุณากรอกรายได้ทั้งปีของคุณ';
+                        return;
+                    } else {
+                        document.getElementById('annual_income_error').innerText = '';
+                    }
+                    total_income = annual_income;
+                } else if (incomeType === 'monthly') {
+                    let monthly_income = parseNumber(document.getElementById('monthly_income').value);
+                    if (monthly_income === 0) {
+                        document.getElementById('monthly_income_error').innerText = 'กรุณากรอกรายได้ต่อเดือนของคุณ';
+                        return;
+                    } else {
+                        document.getElementById('monthly_income_error').innerText = '';
+                    }
+                    let bonus_income = parseNumber(document.getElementById('bonus_income').value);
+                    total_income = (monthly_income * 12) + bonus_income;
+                }
+
+                // คำนวณค่าใช้จ่ายหักเหมา 50% แต่ไม่เกิน 100,000 บาท
+                expense = total_income * 0.50;
+                if (expense > 100000) expense = 100000;
+
+                // แสดงผลค่าใช้จ่ายที่หักได้
+                document.getElementById('expense_display').innerText = formatNumber(expense);
+
+                // ไปยังขั้นตอนที่ 2
+                document.getElementById('step-1').classList.remove('active');
+                document.getElementById('step-2').classList.add('active');
+            } else if (currentStep === 2) {
+                // ไปยังขั้นตอนที่ 3
+                document.getElementById('step-2').classList.remove('active');
+                document.getElementById('step-3').classList.add('active');
+            }
+        }
+
+        // ฟังก์ชันสำหรับย้อนกลับไปยังขั้นตอนก่อนหน้า
+        function prevStep(currentStep) {
+            if (currentStep === 2) {
+                document.getElementById('step-2').classList.remove('active');
+                document.getElementById('step-1').classList.add('active');
+            } else if (currentStep === 3) {
+                document.getElementById('step-3').classList.remove('active');
+                document.getElementById('step-2').classList.add('active');
+            }
+        }
+
+        // สร้างตัวเลือกจำนวนบุตรใน Dropdown
+        function populateChildrenOptions() {
+            const childrenSelect = document.getElementById('children');
+            for (let i = 0; i <= 10; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.text = i;
+                if (i === 0) {
+                    option.selected = true;
+                }
+                childrenSelect.add(option);
+            }
+        }
+
+        // เรียกใช้ฟังก์ชันเมื่อโหลดหน้าเสร็จ
+        window.onload = function() {
+            populateChildrenOptions();
+        };
+
+        // ฟังก์ชันสำหรับคำนวณภาษี
+        function calculateTax() {
+            // ค่าลดหย่อน
+            let personal_allowance = 60000;
+            let spouse = document.getElementById('spouse').value;
+            let spouse_allowance = (spouse === 'yes') ? 60000 : 0;
+
+            let children = parseInt(document.getElementById('children').value) || 0;
+            let child_allowance = 0;
+            for (let i = 1; i <= children; i++) {
+                if (i >= 2) {
+                    child_allowance += 60000;
+                } else {
+                    child_allowance += 30000;
+                }
+            }
+
+            // ค่าลดหย่อนอื่น ๆ
+            let social_security = parseNumber(document.getElementById('social_security').value);
+            if (social_security > 9000) social_security = 9000;
+
+            let life_insurance = parseNumber(document.getElementById('life_insurance').value);
+            if (life_insurance > 100000) life_insurance = 100000;
+
+            let health_insurance = parseNumber(document.getElementById('health_insurance').value);
+            if (health_insurance > 25000) health_insurance = 25000;
+
+            let pension_insurance = parseNumber(document.getElementById('pension_insurance').value);
+            // จำกัด 15% ของรายได้ ไม่เกิน 200,000 บาท
+            let pension_limit = total_income * 0.15;
+            if (pension_insurance > pension_limit) pension_insurance = pension_limit;
+            if (pension_insurance > 200000) pension_insurance = 200000;
+
+            let ssf = parseNumber(document.getElementById('ssf').value);
+            let rmf = parseNumber(document.getElementById('rmf').value);
+            let pvd = parseNumber(document.getElementById('pvd').value);
+            let thaiesg = parseNumber(document.getElementById('thaiesg').value);
+            // ตรวจสอบแต่ละกองทุนตามเพดานของมัน
+            ssf = Math.min(ssf, total_income * 0.30, 200000);
+            rmf = Math.min(rmf, total_income * 0.30, 500000);
+            thaiesg = Math.min(thaiesg, total_income * 0.30, 300000);
+            pvd = Math.min(pvd, total_income * 0.15, 500000);
+            // รวมการลงทุน
+            let investment_total = ssf + rmf + pvd + thaiesg;
+            let investment_limit = total_income * 0.30;
+            if (investment_total > investment_limit) investment_total = investment_limit;
+            if (investment_total > 500000) investment_total = 500000;
+
+            let home_loan_interest = parseNumber(document.getElementById('home_loan_interest').value);
+            if (home_loan_interest > 100000) home_loan_interest = 100000;
+
+            let total_deductions = expense + personal_allowance + spouse_allowance + child_allowance + social_security + life_insurance + health_insurance + pension_insurance + investment_total + home_loan_interest;
+
+            // เงินได้หลังหักลดหย่อนเบื้องต้น
+            let taxable_income = total_income - total_deductions;
+            if (taxable_income < 0) taxable_income = 0;
+
+            // คำนวณค่าลดหย่อนเงินบริจาค (ไม่เกิน 10% ของเงินได้หลังหักลดหย่อน)
+            let donation = parseNumber(document.getElementById('donation').value);
+            let donation_limit = taxable_income * 0.10;
+            if (donation > donation_limit) {
+                donation = donation_limit;
+            }
+
+            total_deductions += donation;
+
+            // เงินได้สุทธิ
+            let net_income = total_income - total_deductions;
+            if (net_income < 0) net_income = 0;
+
+            // คำนวณภาษี
+            let tax = 0;
+            if (net_income <= 150000) {
+                tax = 0;
+            } else if (net_income <= 300000) {
+                tax = (net_income - 150000) * 0.05;
+            } else if (net_income <= 500000) {
+                tax = ((net_income - 300000) * 0.10) + 7500;
+            } else if (net_income <= 750000) {
+                tax = ((net_income - 500000) * 0.15) + 27500;
+            } else if (net_income <= 1000000) {
+                tax = ((net_income - 750000) * 0.20) + 65000;
+            } else if (net_income <= 2000000) {
+                tax = ((net_income - 1000000) * 0.25) + 115000;
+            } else if (net_income <= 5000000) {
+                tax = ((net_income - 2000000) * 0.30) + 365000;
+            } else {
+                tax = ((net_income - 5000000) * 0.35) + 1265000;
+            }
+
+            // แสดงผลใน Result Section
+            document.getElementById('result_total_income').innerText = formatNumber(total_income);
+            document.getElementById('result_expense').innerText = formatNumber(expense);
+            document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
+            document.getElementById('result_net_income').innerText = formatNumber(net_income);
+            document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
+
+            // แสดง Result Section และซ่อนขั้นตอนอื่น ๆ
+            document.getElementById('step-3').classList.remove('active');
+            document.getElementById('result-section').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // ฟังก์ชันสำหรับแก้ไขข้อมูล
+        function editData() {
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('step-1').classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // ฟังก์ชันสำหรับเริ่มใหม่
+        function resetData() {
+            location.reload();
+        }
+    </script>
+
+</body>
+</html>
