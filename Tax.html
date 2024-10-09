@@ -177,6 +177,43 @@
             color: #d9534f;
             font-weight: bold;
         }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+        }
+        .modal-content ul {
+            text-align: left;
+            padding-left: 20px;
+        }
+        .modal-content button {
+            width: auto;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            border-radius: 50px;
+        }
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -477,6 +514,15 @@
         </div>
     </div>
 
+    <!-- Modal for Error Messages -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <h2>พบข้อผิดพลาด</h2>
+            <ul id="errorList"></ul>
+            <button onclick="closeErrorModal()">รับทราบ</button>
+        </div>
+    </div>
+
     <!-- JavaScript -->
     <script>
         // ฟังก์ชันสำหรับเริ่มโปรแกรมคำนวณ
@@ -698,6 +744,9 @@
                 el.innerText = '';
             });
 
+            let errorMessages = [];
+            let errorFields = [];
+
             // ค่าลดหย่อน
             let personal_allowance = 60000;
             let spouse = document.getElementById('spouse').value;
@@ -736,7 +785,8 @@
             // เงินสมทบประกันสังคม
             let social_security = parseNumber(document.getElementById('social_security').value);
             if (social_security > 9000) {
-                document.getElementById('social_security_error').innerText = 'ไม่ควรเกิน 9,000 บาท';
+                errorMessages.push('เงินสมทบประกันสังคมไม่ควรเกิน 9,000 บาท');
+                errorFields.push('social_security');
             }
             social_security = Math.min(social_security, 9000);
 
@@ -748,82 +798,94 @@
             if (document.getElementById('has_insurance').checked) {
                 let life_insurance = parseNumber(document.getElementById('life_insurance').value);
                 if (life_insurance > 100000) {
-                    document.getElementById('life_insurance_error').innerText = 'ไม่ควรเกิน 100,000 บาท';
+                    errorMessages.push('เบี้ยประกันชีวิตและประกันสะสมทรัพย์ไม่ควรเกิน 100,000 บาท');
+                    errorFields.push('life_insurance');
                 }
                 life_insurance = Math.min(life_insurance, 100000);
 
                 let health_insurance = parseNumber(document.getElementById('health_insurance').value);
                 if (health_insurance > 25000) {
-                    document.getElementById('health_insurance_error').innerText = 'ไม่ควรเกิน 25,000 บาท';
+                    errorMessages.push('เบี้ยประกันสุขภาพไม่ควรเกิน 25,000 บาท');
+                    errorFields.push('health_insurance');
                 }
                 health_insurance = Math.min(health_insurance, 25000);
 
                 // รวมประกันชีวิตและสุขภาพ สูงสุดไม่เกิน 100,000 บาท
                 let insurance_total = life_insurance + health_insurance;
                 if (insurance_total > 100000) {
-                    document.getElementById('life_insurance_error').innerText = 'รวมเบี้ยประกันชีวิตและสุขภาพไม่ควรเกิน 100,000 บาท';
-                    insurance_total = 100000;
+                    errorMessages.push('รวมเบี้ยประกันชีวิตและสุขภาพไม่ควรเกิน 100,000 บาท');
+                    errorFields.push('life_insurance');
                 }
+                insurance_total = Math.min(insurance_total, 100000);
 
                 let parent_health_insurance = parseNumber(document.getElementById('parent_health_insurance').value);
                 if (parent_health_insurance > 15000) {
-                    document.getElementById('parent_health_insurance_error').innerText = 'ไม่ควรเกิน 15,000 บาท';
+                    errorMessages.push('เบี้ยประกันสุขภาพบิดามารดาไม่ควรเกิน 15,000 บาท');
+                    errorFields.push('parent_health_insurance');
                 }
                 parent_health_insurance = Math.min(parent_health_insurance, 15000);
 
                 let pension_insurance = parseNumber(document.getElementById('pension_insurance').value);
                 let pension_limit = total_income * 0.15;
                 if (pension_insurance > pension_limit || pension_insurance > 200000) {
-                    document.getElementById('pension_insurance_error').innerText = 'ไม่ควรเกิน 15% ของรายได้หรือ 200,000 บาท';
+                    errorMessages.push('เบี้ยประกันชีวิตแบบบำนาญไม่ควรเกิน 15% ของรายได้หรือ 200,000 บาท');
+                    errorFields.push('pension_insurance');
                 }
                 pension_insurance = Math.min(pension_insurance, pension_limit, 200000);
 
                 let pvd = parseNumber(document.getElementById('pvd').value);
                 let pvd_limit = total_income * 0.15;
                 if (pvd > pvd_limit || pvd > 500000) {
-                    document.getElementById('pvd_error').innerText = 'ไม่ควรเกิน 15% ของรายได้หรือ 500,000 บาท';
+                    errorMessages.push('เงินสมทบกองทุนสำรองเลี้ยงชีพ (PVD) ไม่ควรเกิน 15% ของรายได้หรือ 500,000 บาท');
+                    errorFields.push('pvd');
                 }
                 pvd = Math.min(pvd, pvd_limit, 500000);
 
                 let ssf = parseNumber(document.getElementById('ssf').value);
                 let ssf_limit = total_income * 0.30;
                 if (ssf > ssf_limit || ssf > 200000) {
-                    document.getElementById('ssf_error').innerText = 'ไม่ควรเกิน 30% ของรายได้หรือ 200,000 บาท';
+                    errorMessages.push('กองทุนรวมเพื่อการออม (SSF) ไม่ควรเกิน 30% ของรายได้หรือ 200,000 บาท');
+                    errorFields.push('ssf');
                 }
                 ssf = Math.min(ssf, ssf_limit, 200000);
 
                 let rmf = parseNumber(document.getElementById('rmf').value);
                 let rmf_limit = total_income * 0.30;
                 if (rmf > rmf_limit || rmf > 500000) {
-                    document.getElementById('rmf_error').innerText = 'ไม่ควรเกิน 30% ของรายได้หรือ 500,000 บาท';
+                    errorMessages.push('กองทุนรวมเพื่อการเลี้ยงชีพ (RMF) ไม่ควรเกิน 30% ของรายได้หรือ 500,000 บาท');
+                    errorFields.push('rmf');
                 }
                 rmf = Math.min(rmf, rmf_limit, 500000);
 
                 let thaiesg = parseNumber(document.getElementById('thaiesg').value);
                 let thaiesg_limit = total_income * 0.30;
                 if (thaiesg > thaiesg_limit || thaiesg > 300000) {
-                    document.getElementById('thaiesg_error').innerText = 'ไม่ควรเกิน 30% ของรายได้หรือ 300,000 บาท';
+                    errorMessages.push('กองทุนรวมไทยเพื่อความยั่งยืน (Thai ESG) ไม่ควรเกิน 30% ของรายได้หรือ 300,000 บาท');
+                    errorFields.push('thaiesg');
                 }
                 thaiesg = Math.min(thaiesg, thaiesg_limit, 300000);
 
                 let social_enterprise = parseNumber(document.getElementById('social_enterprise').value);
                 if (social_enterprise > 100000) {
-                    document.getElementById('social_enterprise_error').innerText = 'ไม่ควรเกิน 100,000 บาท';
+                    errorMessages.push('เงินลงทุนธุรกิจ Social Enterprise ไม่ควรเกิน 100,000 บาท');
+                    errorFields.push('social_enterprise');
                 }
                 social_enterprise = Math.min(social_enterprise, 100000);
 
                 let nsf = parseNumber(document.getElementById('nsf').value);
                 if (nsf > 13200) {
-                    document.getElementById('nsf_error').innerText = 'ไม่ควรเกิน 13,200 บาท';
+                    errorMessages.push('เงินสมทบกองทุนการออมแห่งชาติ (กอช.) ไม่ควรเกิน 13,200 บาท');
+                    errorFields.push('nsf');
                 }
                 nsf = Math.min(nsf, 13200);
 
                 // รวมค่าลดหย่อนกลุ่มเกษียณ สูงสุดไม่เกิน 500,000 บาท
                 retirement_total = pension_insurance + pvd + rmf + nsf;
                 if (retirement_total > 500000) {
-                    document.getElementById('pension_insurance_error').innerText = 'รวมค่าลดหย่อนกลุ่มเกษียณไม่ควรเกิน 500,000 บาท';
-                    retirement_total = 500000;
+                    errorMessages.push('รวมค่าลดหย่อนกลุ่มเกษียณไม่ควรเกิน 500,000 บาท');
+                    errorFields.push('pension_insurance');
                 }
+                retirement_total = Math.min(retirement_total, 500000);
 
                 total_investment_deductions = insurance_total + parent_health_insurance + retirement_total + ssf + thaiesg + social_enterprise;
             }
@@ -833,21 +895,12 @@
             if (document.getElementById('has_donation').checked) {
                 let donation = parseNumber(document.getElementById('donation').value);
 
-                let donation_limit = (total_income - expense - total_personal_deductions - total_investment_deductions) * 0.10;
-                if (donation > donation_limit) {
-                    document.getElementById('donation_error').innerText = 'ไม่ควรเกิน 10% ของเงินได้หลังหักลดหย่อน';
-                }
-                // Note: The limit will be applied later in calculations
-
                 let donation_education = parseNumber(document.getElementById('donation_education').value) * 2;
-
-                if (donation_education > donation_limit) {
-                    document.getElementById('donation_education_error').innerText = 'ไม่ควรเกิน 10% ของเงินได้หลังหักลดหย่อน';
-                }
 
                 let donation_political = parseNumber(document.getElementById('donation_political').value);
                 if (donation_political > 10000) {
-                    document.getElementById('donation_political_error').innerText = 'ไม่ควรเกิน 10,000 บาท';
+                    errorMessages.push('เงินบริจาคพรรคการเมืองไม่ควรเกิน 10,000 บาท');
+                    errorFields.push('donation_political');
                 }
                 donation_political = Math.min(donation_political, 10000);
 
@@ -859,30 +912,40 @@
             if (document.getElementById('has_stimulus').checked) {
                 let easy_ereceipt = parseNumber(document.getElementById('easy_ereceipt').value);
                 if (easy_ereceipt > 50000) {
-                    document.getElementById('easy_ereceipt_error').innerText = 'ไม่ควรเกิน 50,000 บาท';
+                    errorMessages.push('Easy e-Receipt 2567 ไม่ควรเกิน 50,000 บาท');
+                    errorFields.push('easy_ereceipt');
                 }
                 easy_ereceipt = Math.min(easy_ereceipt, 50000);
 
                 let local_travel = parseNumber(document.getElementById('local_travel').value);
                 if (local_travel > 15000) {
-                    document.getElementById('local_travel_error').innerText = 'ไม่ควรเกิน 15,000 บาท';
+                    errorMessages.push('ค่าลดหย่อนเที่ยวเมืองรอง 2567 ไม่ควรเกิน 15,000 บาท');
+                    errorFields.push('local_travel');
                 }
                 local_travel = Math.min(local_travel, 15000);
 
                 let home_loan_interest = parseNumber(document.getElementById('home_loan_interest').value);
                 if (home_loan_interest > 100000) {
-                    document.getElementById('home_loan_interest_error').innerText = 'ไม่ควรเกิน 100,000 บาท';
+                    errorMessages.push('ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัยไม่ควรเกิน 100,000 บาท');
+                    errorFields.push('home_loan_interest');
                 }
                 home_loan_interest = Math.min(home_loan_interest, 100000);
 
                 let new_home = parseNumber(document.getElementById('new_home').value);
                 let new_home_deduction = Math.floor(new_home / 1000000) * 10000;
                 if (new_home_deduction > 100000) {
-                    document.getElementById('new_home_error').innerText = 'ไม่ควรเกิน 100,000 บาท';
-                    new_home_deduction = 100000;
+                    errorMessages.push('ค่าสร้างบ้านใหม่ 2567-2568 ไม่ควรเกิน 100,000 บาท');
+                    errorFields.push('new_home');
                 }
+                new_home_deduction = Math.min(new_home_deduction, 100000);
 
                 total_stimulus_deductions = easy_ereceipt + local_travel + home_loan_interest + new_home_deduction;
+            }
+
+            // ถ้ามีข้อผิดพลาด แสดง Modal และหยุดการทำงาน
+            if (errorMessages.length > 0) {
+                showErrorModal(errorMessages, errorFields);
+                return; // หยุดการทำงานต่อ
             }
 
             // รวมค่าลดหย่อนทั้งหมด
@@ -937,6 +1000,37 @@
             document.getElementById('step-3').classList.remove('active');
             document.getElementById('result-section').style.display = 'block';
             window.scrollTo(0, 0);
+        }
+
+        // ฟังก์ชันสำหรับแสดง Modal ข้อผิดพลาด
+        function showErrorModal(messages, fields) {
+            const errorModal = document.getElementById('errorModal');
+            const errorList = document.getElementById('errorList');
+            errorList.innerHTML = '';
+            messages.forEach(function(msg) {
+                const li = document.createElement('li');
+                li.innerText = msg;
+                errorList.appendChild(li);
+            });
+            errorModal.style.display = 'block';
+
+            // เก็บข้อมูล fields ที่มีข้อผิดพลาด
+            errorModal.errorFields = fields;
+        }
+
+        // ฟังก์ชันสำหรับปิด Modal ข้อผิดพลาด
+        function closeErrorModal() {
+            const errorModal = document.getElementById('errorModal');
+            errorModal.style.display = 'none';
+
+            // เลื่อนไปยัง field ที่มีข้อผิดพลาดแรก
+            if (errorModal.errorFields && errorModal.errorFields.length > 0) {
+                const firstErrorField = document.getElementById(errorModal.errorFields[0]);
+                if (firstErrorField) {
+                    firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstErrorField.focus();
+                }
+            }
         }
 
         // ฟังก์ชันสำหรับแก้ไขข้อมูล
