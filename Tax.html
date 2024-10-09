@@ -582,10 +582,33 @@
             });
         }
 
-        // เพิ่มคอมม่าขณะกรอกข้อมูลสำหรับทุกช่อง
-        let numberFields = ['annual_income', 'monthly_income', 'bonus_income', 'other_income', 'social_security', 'life_insurance', 'health_insurance', 'parent_health_insurance', 'pension_insurance', 'ssf', 'rmf', 'pvd', 'thaiesg', 'social_enterprise', 'nsf', 'home_loan_interest', 'donation', 'donation_education', 'donation_political', 'easy_ereceipt', 'local_travel', 'new_home'];
+        // เพิ่มคอมม่าขณะกรอกข้อมูลและจัดการการคลิกสำหรับทุกช่อง
+        let numberFields = [
+            'annual_income', 'monthly_income', 'bonus_income', 'other_income', 'social_security',
+            'life_insurance', 'health_insurance', 'parent_health_insurance', 'pension_insurance',
+            'ssf', 'rmf', 'pvd', 'thaiesg', 'social_enterprise', 'nsf',
+            'home_loan_interest', 'donation', 'donation_education', 'donation_political',
+            'easy_ereceipt', 'local_travel', 'new_home'
+        ];
+
+        // Add comma event and focus/blur events to number fields
         numberFields.forEach(function(id) {
             addCommaEvent(id);
+            let input = document.getElementById(id);
+
+            // Clear the zero when the input gains focus
+            input.addEventListener('focus', function() {
+                if (this.value === '0') {
+                    this.value = '';
+                }
+            });
+
+            // If the input is empty when it loses focus, reset it to zero
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = '0';
+                }
+            });
         });
 
         // การจัดการการเลือกประเภทของรายได้
