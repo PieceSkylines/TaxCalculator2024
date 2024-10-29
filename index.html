@@ -261,6 +261,8 @@
             }
         }
     </style>
+    <!-- Load Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     
@@ -517,6 +519,8 @@
             <p><strong>ค่าลดหย่อน:</strong> <span id="result_deductions">0</span> บาท</p>
             <p><strong>เงินได้สุทธิ:</strong> <span id="result_net_income">0</span> บาท</p>
             <p><strong>ภาษีที่ต้องชำระ:</strong> <span class="tax-amount" id="result_tax">0 บาท</span></p>
+            <!-- เพิ่ม Canvas สำหรับกราฟ -->
+            <canvas id="taxChart" width="400" height="400"></canvas>
             <div class="navigation-buttons">
                 <button onclick="editData()">แก้ไขข้อมูล</button>
                 <button onclick="resetData()">เริ่มใหม่</button>
@@ -1038,7 +1042,57 @@
             document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
             document.getElementById('result_net_income').innerText = formatNumber(net_income);
             document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
-
+            // เตรียมข้อมูลสำหรับกราฟ
+            const chartData = {
+                labels: ['รายได้สุทธิ', 'ค่าลดหย่อน', 'ค่าใช้จ่าย', 'ภาษีที่ต้องชำระ'],
+                datasets: [{
+                    label: 'สรุปผลการคำนวณภาษี',
+                    data: [net_income, total_deductions - expense, expense, tax],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',   // รายได้สุทธิ
+                        'rgba(75, 192, 192, 0.6)',   // ค่าลดหย่อน
+                        'rgba(255, 206, 86, 0.6)',   // ค่าใช้จ่าย
+                        'rgba(255, 99, 132, 0.6)'    // ภาษีที่ต้องชำระ
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            };
+            
+            // สร้างกราฟ
+            const ctx = document.getElementById('taxChart').getContext('2d');
+            const taxChart = new Chart(ctx, {
+                type: 'pie', // คุณสามารถเปลี่ยนเป็น 'bar', 'doughnut' หรือประเภทอื่น ๆ ตามต้องการ
+                data: chartData,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += formatNumber(context.parsed) + ' บาท';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
             // แสดง Result Section และซ่อนขั้นตอนอื่น ๆ
             document.getElementById('step-3').classList.remove('active');
             document.getElementById('result-section').style.display = 'block';
