@@ -263,6 +263,8 @@
     </style>
     <!-- Load Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load Chart.js Gauge plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-gauge@0.3.0/dist/chartjs-gauge.min.js"></script>
 </head>
 <body>
     
@@ -519,8 +521,8 @@
             <p><strong>ค่าลดหย่อน:</strong> <span id="result_deductions">0</span> บาท</p>
             <p><strong>เงินได้สุทธิ:</strong> <span id="result_net_income">0</span> บาท</p>
             <p><strong>ภาษีที่ต้องชำระ:</strong> <span class="tax-amount" id="result_tax">0 บาท</span></p>
-            <!-- เพิ่ม Canvas สำหรับกราฟ -->
-            <canvas id="taxChart" width="400" height="400"></canvas>
+            <!-- ใช้ Canvas สำหรับ Gauge Chart -->
+            <canvas id="taxChart" width="400" height="200"></canvas>
             <div class="navigation-buttons">
                 <button onclick="editData()">แก้ไขข้อมูล</button>
                 <button onclick="resetData()">เริ่มใหม่</button>
@@ -714,7 +716,6 @@
         }
 
         // ฟังก์ชันสำหรับย้อนกลับไปยังขั้นตอนก่อนหน้า
-        // Created by Suntiphab Vareenitisakul, 3031, WB-PIC
         function prevStep(currentStep) {
             if (currentStep === 2) {
                 document.getElementById('step-2').classList.remove('active');
@@ -806,7 +807,7 @@
             if (children_adopted > 3) children_adopted = 3; // สูงสุดไม่เกิน 3 คน
             child_allowance += children_adopted * 30000;
 
-           // บิดามารดา
+            // บิดามารดา
             let parents_allowance = 0;
             
             if (document.getElementById('your_father').checked) {
@@ -926,7 +927,7 @@
                 }
                 nsf = Math.min(nsf, 13200);
 
-                // รวมค่าลดหย่อนกลุ่มเกษียณ สูงสุดไม่เกิน 500,000 บาท
+                // รวมค่าลดหย่อนกลุ่มเกษียณ
                 retirement_total = pension_insurance + pvd + rmf + nsf + ssf;
                 if (retirement_total > 500000) {
                     errorMessages.push('รวมค่าลดหย่อนกลุ่มเกษียณไม่ควรเกิน 500,000 บาท');
@@ -934,7 +935,8 @@
                 }
                 retirement_total = Math.min(retirement_total, 500000);
 
-                total_investment_deductions = insurance_total + parent_health_insurance + retirement_total + ssf + thaiesg + social_enterprise;
+                // รวมค่าลดหย่อนการลงทุนทั้งหมด
+                total_investment_deductions = insurance_total + parent_health_insurance + retirement_total + thaiesg + social_enterprise;
             }
 
             // ค่าลดหย่อนกลุ่มเงินบริจาค
@@ -1036,63 +1038,192 @@
                 tax = ((net_income - 5000000) * 0.35) + 1265000;
             }
 
+            // **เริ่มการคำนวณค่าลดหย่อนสูงสุดที่เป็นไปได้**
+
+            // ตัวแปรสำหรับเก็บค่าลดหย่อนสูงสุด
+            let max_personal_deductions = 0;
+            let max_investment_deductions = 0;
+            let max_donation_deductions = 0;
+            let max_stimulus_deductions = 0;
+            let max_total_deductions = 0;
+
+            // ค่าลดหย่อนส่วนบุคคลสูงสุด
+            max_personal_deductions += 60000; // ค่าลดหย่อนส่วนตัวคงที่
+
+            // คู่สมรส
+            let max_spouse_allowance = (spouse === 'yes') ? 60000 : 0;
+            max_personal_deductions += max_spouse_allowance;
+
+            // บุตร
+            let max_child_allowance = 0;
+            let max_children_own = parseInt(document.getElementById('children_own').value) || 0;
+            for (let i = 1; i <= max_children_own; i++) {
+                if (i >= 2) {
+                    max_child_allowance += 60000;
+                } else {
+                    max_child_allowance += 30000;
+                }
+            }
+            let max_children_adopted = parseInt(document.getElementById('children_adopted').value) || 0;
+            if (max_children_adopted > 3) max_children_adopted = 3; // สูงสุด 3 คน
+            max_child_allowance += max_children_adopted * 30000;
+            max_personal_deductions += max_child_allowance;
+
+            // บิดามารดา
+            let max_parents_allowance = 0;
+            if (document.getElementById('your_father').checked) {
+                max_parents_allowance += 30000;
+            }
+            if (document.getElementById('your_mother').checked) {
+                max_parents_allowance += 30000;
+            }
+            if (document.getElementById('spouse_father').checked) {
+                max_parents_allowance += 30000;
+            }
+            if (document.getElementById('spouse_mother').checked) {
+                max_parents_allowance += 30000;
+            }
+            if (max_parents_allowance > 120000) max_parents_allowance = 120000;
+            max_personal_deductions += max_parents_allowance;
+
+            // ผู้พิการหรือทุพพลภาพ
+            let max_disabled_persons = parseInt(document.getElementById('disabled_persons').value) || 0;
+            let max_disabled_allowance = max_disabled_persons * 60000;
+            max_personal_deductions += max_disabled_allowance;
+
+            // เงินสมทบประกันสังคม
+            let max_social_security = 9000;
+            max_personal_deductions += max_social_security;
+
+            // ค่าลดหย่อนการลงทุนสูงสุด
+            if (document.getElementById('has_insurance').checked) {
+                let max_life_insurance = 100000;
+                let max_health_insurance = 25000;
+                let max_insurance_total = max_life_insurance + max_health_insurance;
+                if (max_insurance_total > 100000) max_insurance_total = 100000;
+
+                let max_parent_health_insurance = 15000;
+
+                let max_pension_insurance = Math.min(total_income * 0.15, 200000);
+
+                let max_pvd = Math.min(total_income * 0.15, 500000);
+
+                let max_ssf = Math.min(total_income * 0.30, 200000);
+
+                let max_rmf = Math.min(total_income * 0.30, 500000);
+
+                let max_nsf = 13200;
+
+                // รวมค่าลดหย่อนกลุ่มเกษียณ
+                let max_retirement_total = max_pension_insurance + max_pvd + max_rmf + max_nsf + max_ssf;
+                if (max_retirement_total > 500000) max_retirement_total = 500000;
+
+                let max_thaiesg = Math.min(total_income * 0.30, 300000);
+
+                let max_social_enterprise = 100000;
+
+                max_investment_deductions = max_insurance_total + max_parent_health_insurance + max_retirement_total + max_thaiesg + max_social_enterprise;
+            }
+
+            // ค่าลดหย่อนกลุ่มกระตุ้นเศรษฐกิจสูงสุด
+            if (document.getElementById('has_stimulus').checked) {
+                let max_easy_ereceipt = 50000;
+                let max_local_travel = 15000;
+                let max_home_loan_interest = 100000;
+                let max_new_home_deduction = 100000;
+
+                max_stimulus_deductions = max_easy_ereceipt + max_local_travel + max_home_loan_interest + max_new_home_deduction;
+            }
+
+            // ค่าลดหย่อนเงินบริจาคสูงสุด
+            let max_donation_deductions = 0;
+            if (document.getElementById('has_donation').checked) {
+                // คำนวณเงินได้หลังหักลดหย่อนเบื้องต้นเพื่อหาขีดจำกัด 10%
+                let taxable_income_before_donations = total_income - expense - max_personal_deductions - max_investment_deductions - max_stimulus_deductions;
+                if (taxable_income_before_donations < 0) taxable_income_before_donations = 0;
+
+                let max_donation_limit = taxable_income_before_donations * 0.10;
+
+                let max_donation_political = 10000;
+
+                max_donation_deductions = max_donation_limit + max_donation_political;
+            }
+
+            // รวมค่าลดหย่อนสูงสุดทั้งหมด
+            max_total_deductions = expense + max_personal_deductions + max_investment_deductions + max_stimulus_deductions + max_donation_deductions;
+
+            // คำนวณเปอร์เซ็นต์ของค่าลดหย่อนที่ใช้จริง
+            let percentage = 0;
+            if (max_total_deductions > 0) {
+                percentage = (total_deductions / max_total_deductions) * 100;
+                if (percentage > 100) percentage = 100;
+            }
+
             // แสดงผลใน Result Section
             document.getElementById('result_total_income').innerText = formatNumber(total_income);
             document.getElementById('result_expense').innerText = formatNumber(expense);
             document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
             document.getElementById('result_net_income').innerText = formatNumber(net_income);
             document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
-            // เตรียมข้อมูลสำหรับกราฟ
-            const chartData = {
-                labels: ['รายได้สุทธิ', 'ค่าลดหย่อน', 'ค่าใช้จ่าย', 'ภาษีที่ต้องชำระ'],
+
+            // เตรียมข้อมูลสำหรับ Gauge Chart
+            const gaugeData = {
+                labels: ['เปอร์เซ็นต์การใช้สิทธิ์ลดหย่อนภาษีของคุณ'],
                 datasets: [{
-                    label: 'สรุปผลการคำนวณภาษี',
-                    data: [net_income, total_deductions - expense, expense, tax],
-                    backgroundColor: [
-                        'rgba(54, 162, 235, 0.6)',   // รายได้สุทธิ
-                        'rgba(75, 192, 192, 0.6)',   // ค่าลดหย่อน
-                        'rgba(255, 206, 86, 0.6)',   // ค่าใช้จ่าย
-                        'rgba(255, 99, 132, 0.6)'    // ภาษีที่ต้องชำระ
-                    ],
-                    borderColor: [
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(255, 99, 132, 1)'
-                    ],
-                    borderWidth: 1
+                    data: [percentage],
+                    value: percentage,
+                    minValue: 0,
+                    maxValue: 100,
+                    backgroundColor: ['rgba(54, 162, 235, 0.8)'],
+                    borderWidth: 0,
                 }]
             };
-            
-            // สร้างกราฟ
-            const ctx = document.getElementById('taxChart').getContext('2d');
-            const taxChart = new Chart(ctx, {
-                type: 'pie', // คุณสามารถเปลี่ยนเป็น 'bar', 'doughnut' หรือประเภทอื่น ๆ ตามต้องการ
-                data: chartData,
+
+            // ตัวเลือกสำหรับ Gauge Chart
+            const gaugeOptions = {
+                type: 'gauge',
+                data: gaugeData,
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
+                    needle: {
+                        radiusPercentage: 2,
+                        widthPercentage: 3.2,
+                        lengthPercentage: 80,
+                        color: '#444'
+                    },
+                    valueLabel: {
+                        formatter: function(value) {
+                            return value.toFixed(1) + '%';
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed !== null) {
-                                        label += formatNumber(context.parsed) + ' บาท';
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
+                        fontSize: 20,
+                        color: '#000'
+                    },
+                    plugins: {
+                        legend: { display: false },
+                    },
+                    title: {
+                        display: true,
+                        text: 'เปอร์เซ็นต์การใช้สิทธิ์ลดหย่อนภาษีของคุณ',
+                        font: {
+                            size: 16
+                        },
+                        padding: 20
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 1500
                     }
                 }
-            });
-            
+            };
+
+            // สร้างหรืออัปเดต Gauge Chart
+            const ctx = document.getElementById('taxChart').getContext('2d');
+            // ตรวจสอบว่ามี Chart instance ก่อนหน้านี้หรือไม่ ถ้ามีให้ทำลายก่อนสร้างใหม่
+            if (window.taxChartInstance) {
+                window.taxChartInstance.destroy();
+            }
+            window.taxChartInstance = new Chart(ctx, gaugeOptions);
+
             // แสดง Result Section และซ่อนขั้นตอนอื่น ๆ
             document.getElementById('step-3').classList.remove('active');
             document.getElementById('result-section').style.display = 'block';
