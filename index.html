@@ -923,7 +923,7 @@
                 nsf = Math.min(nsf, 13200);
 
                 // รวมค่าลดหย่อนกลุ่มเกษียณ สูงสุดไม่เกิน 500,000 บาท
-                retirement_total = pension_insurance + pvd + rmf + nsf;
+                retirement_total = pension_insurance + pvd + rmf + nsf + ssf;
                 if (retirement_total > 500000) {
                     errorMessages.push('รวมค่าลดหย่อนกลุ่มเกษียณไม่ควรเกิน 500,000 บาท');
                     errorFields.push('pension_insurance');
