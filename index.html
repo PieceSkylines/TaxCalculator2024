@@ -360,16 +360,24 @@
                 <span class="error" id="social_security_error"></span>
                 <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 9,000 บาท</div>
 
-                <label>คุณมีบิดามารดาที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปีหรือไม่?</label>
+                <label>บิดามารดาของคุณที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปี:</label>
                 <div class="checkbox-group">
-                    <input type="checkbox" id="parents">
-                    <label for="parents">ใช่</label>
+                <input type="checkbox" id="your_father">
+                <label for="your_father">บิดาของคุณ</label>
                 </div>
-
-                <label>คุณมีบิดามารดาของคู่สมรสที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปีหรือไม่?</label>
                 <div class="checkbox-group">
-                    <input type="checkbox" id="spouse_parents">
-                    <label for="spouse_parents">ใช่</label>
+                <input type="checkbox" id="your_mother">
+                <label for="your_mother">มารดาของคุณ</label>
+                </div>
+            
+                <label>บิดามารดาของคู่สมรสที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปี:</label>
+                <div class="checkbox-group">
+                <input type="checkbox" id="spouse_father">
+                <label for="spouse_father">บิดาของคู่สมรส</label>
+                </div>
+                <div class="checkbox-group">
+                <input type="checkbox" id="spouse_mother">
+                <label for="spouse_mother">มารดาของคู่สมรส</label>
                 </div>
 
                 <label>จำนวนผู้พิการหรือทุพพลภาพที่คุณอุปการะ:</label>
@@ -794,15 +802,24 @@
             if (children_adopted > 3) children_adopted = 3; // สูงสุดไม่เกิน 3 คน
             child_allowance += children_adopted * 30000;
 
-            // บิดามารดา
+           // บิดามารดา
             let parents_allowance = 0;
-            if (document.getElementById('parents').checked) {
-                parents_allowance += 60000;
+            
+            if (document.getElementById('your_father').checked) {
+                parents_allowance += 30000;
             }
-            if (document.getElementById('spouse_parents').checked) {
-                parents_allowance += 60000;
+            if (document.getElementById('your_mother').checked) {
+                parents_allowance += 30000;
             }
-            if (parents_allowance > 120000) parents_allowance = 120000; // สูงสุดไม่เกิน 120,000 บาท
+            if (document.getElementById('spouse_father').checked) {
+                parents_allowance += 30000;
+            }
+            if (document.getElementById('spouse_mother').checked) {
+                parents_allowance += 30000;
+            }
+            
+            // สูงสุดไม่เกิน 120,000 บาท
+            if (parents_allowance > 120000) parents_allowance = 120000;
 
             // ผู้พิการหรือทุพพลภาพ
             let disabled_persons = parseInt(document.getElementById('disabled_persons').value) || 0;
