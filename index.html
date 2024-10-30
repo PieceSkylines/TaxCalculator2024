@@ -517,6 +517,8 @@
             <p><strong>ค่าลดหย่อน:</strong> <span id="result_deductions">0</span> บาท</p>
             <p><strong>เงินได้สุทธิ:</strong> <span id="result_net_income">0</span> บาท</p>
             <p><strong>ภาษีที่ต้องชำระ:</strong> <span class="tax-amount" id="result_tax">0 บาท</span></p>
+            <!-- Added Effective Tax Rate with English translation -->
+            <p><strong>อัตราภาษีที่แท้จริง (Effective Tax Rate):</strong> <span id="result_effective_tax_rate">0%</span></p>
             <div class="navigation-buttons">
                 <button onclick="editData()">แก้ไขข้อมูล</button>
                 <button onclick="resetData()">เริ่มใหม่</button>
@@ -802,7 +804,7 @@
             if (children_adopted > 3) children_adopted = 3; // สูงสุดไม่เกิน 3 คน
             child_allowance += children_adopted * 30000;
 
-           // บิดามารดา
+            // บิดามารดา
             let parents_allowance = 0;
             
             if (document.getElementById('your_father').checked) {
@@ -1032,12 +1034,20 @@
                 tax = ((net_income - 5000000) * 0.35) + 1265000;
             }
 
+            // คำนวณอัตราภาษีที่แท้จริง
+            let effective_tax_rate = 0;
+            if (total_income > 0) {
+                effective_tax_rate = (tax / total_income) * 100;
+            }
+
             // แสดงผลใน Result Section
             document.getElementById('result_total_income').innerText = formatNumber(total_income);
             document.getElementById('result_expense').innerText = formatNumber(expense);
             document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
             document.getElementById('result_net_income').innerText = formatNumber(net_income);
             document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
+            // แสดงอัตราภาษีที่แท้จริง
+            document.getElementById('result_effective_tax_rate').innerText = effective_tax_rate.toFixed(2) + '%';
 
             // แสดง Result Section และซ่อนขั้นตอนอื่น ๆ
             document.getElementById('step-3').classList.remove('active');
