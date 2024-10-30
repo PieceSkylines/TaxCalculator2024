@@ -178,6 +178,51 @@
             color: #d9534f;
             font-weight: bold;
         }
+        /* Style for Effective Tax Rate */
+        #result-section .effective-tax-rate {
+            font-size: 2.2rem;
+            color: #28a745; /* Green color */
+            font-weight: bold;
+        }
+        /* Gauge Styles */
+        .gauge-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .gauge {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            height: 30px;
+        }
+        .gauge-fill {
+            background-color: #28a745;
+            height: 100%;
+            text-align: right;
+            line-height: 30px;
+            color: #fff;
+            font-weight: bold;
+            padding-right: 10px;
+            box-sizing: border-box;
+        }
+        /* Button to encourage more investment */
+        .investment-button {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ffc107;
+            color: #212529;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            font-family: 'Kanit', sans-serif;
+        }
+        .investment-button:hover {
+            background-color: #e0a800;
+        }
         /* Modal Styles */
         .modal {
             display: none;
@@ -517,8 +562,19 @@
             <p><strong>ค่าลดหย่อน:</strong> <span id="result_deductions">0</span> บาท</p>
             <p><strong>เงินได้สุทธิ:</strong> <span id="result_net_income">0</span> บาท</p>
             <p><strong>ภาษีที่ต้องชำระ:</strong> <span class="tax-amount" id="result_tax">0 บาท</span></p>
-            <!-- Added Effective Tax Rate with English translation -->
-            <p><strong>อัตราภาษีที่แท้จริง (Effective Tax Rate):</strong> <span id="result_effective_tax_rate">0%</span></p>
+            <!-- Added Effective Tax Rate with styling -->
+            <p><strong>อัตราภาษีที่แท้จริง (Effective Tax Rate):</strong> <span class="effective-tax-rate" id="result_effective_tax_rate">0%</span></p>
+            
+            <!-- Gauge Section -->
+            <div class="gauge-container">
+                <h3>การใช้สิทธิลดหย่อนกลุ่มเกษียณ</h3>
+                <div class="gauge">
+                    <div class="gauge-fill" id="gauge_fill" style="width: 0%;">0%</div>
+                </div>
+                <!-- Investment Button -->
+                <button id="investment_button" class="investment-button" style="display: none;" onclick="goToInvestmentSection()">ซื้อ RMF SSF หรือ ThaiESG เพิ่ม เพื่อลดหย่อนให้มากขึ้น</button>
+            </div>
+
             <div class="navigation-buttons">
                 <button onclick="editData()">แก้ไขข้อมูล</button>
                 <button onclick="resetData()">เริ่มใหม่</button>
@@ -840,6 +896,7 @@
             // ค่าลดหย่อนกลุ่มประกัน เงินออม และการลงทุน
             let total_investment_deductions = 0;
             let retirement_total = 0; // ตัวแปรสำหรับตรวจสอบค่าลดหย่อนกลุ่มเกษียณ
+            let max_retirement_deduction = 0;
             if (document.getElementById('has_insurance').checked) {
                 let life_insurance = parseNumber(document.getElementById('life_insurance').value);
                 if (life_insurance > 100000) {
@@ -932,7 +989,13 @@
                 }
                 retirement_total = Math.min(retirement_total, 500000);
 
+                // Maximum retirement deduction limit
+                max_retirement_deduction = Math.min(500000, total_income * 0.30);
+
                 total_investment_deductions = insurance_total + parent_health_insurance + retirement_total + ssf + thaiesg + social_enterprise;
+            } else {
+                // Even if the user didn't check 'has_insurance', we need to calculate max retirement deduction
+                max_retirement_deduction = Math.min(500000, total_income * 0.30);
             }
 
             // ค่าลดหย่อนกลุ่มเงินบริจาค
@@ -1040,6 +1103,14 @@
                 effective_tax_rate = (tax / total_income) * 100;
             }
 
+            // คำนวณเปอร์เซ็นต์การใช้สิทธิลดหย่อนกลุ่มเกษียณ
+            let retirement_deduction_used = retirement_total;
+            let retirement_deduction_percentage = 0;
+            if (max_retirement_deduction > 0) {
+                retirement_deduction_percentage = (retirement_deduction_used / max_retirement_deduction) * 100;
+                if (retirement_deduction_percentage > 100) retirement_deduction_percentage = 100;
+            }
+
             // แสดงผลใน Result Section
             document.getElementById('result_total_income').innerText = formatNumber(total_income);
             document.getElementById('result_expense').innerText = formatNumber(expense);
@@ -1048,6 +1119,19 @@
             document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
             // แสดงอัตราภาษีที่แท้จริง
             document.getElementById('result_effective_tax_rate').innerText = effective_tax_rate.toFixed(2) + '%';
+
+            // อัพเดต Gauge
+            let gaugeFill = document.getElementById('gauge_fill');
+            gaugeFill.style.width = retirement_deduction_percentage + '%';
+            gaugeFill.innerText = retirement_deduction_percentage.toFixed(2) + '%';
+
+            // ตรวจสอบว่าผู้ใช้สามารถลดหย่อนได้เพิ่มหรือไม่
+            let investmentButton = document.getElementById('investment_button');
+            if (retirement_deduction_percentage < 100) {
+                investmentButton.style.display = 'block';
+            } else {
+                investmentButton.style.display = 'none';
+            }
 
             // แสดง Result Section และซ่อนขั้นตอนอื่น ๆ
             document.getElementById('step-3').classList.remove('active');
@@ -1096,6 +1180,26 @@
         // ฟังก์ชันสำหรับเริ่มใหม่
         function resetData() {
             location.reload();
+        }
+
+        // ฟังก์ชันสำหรับไปยังส่วนการลงทุน
+        function goToInvestmentSection() {
+            document.getElementById('result-section').style.display = 'none';
+            document.getElementById('step-3').classList.add('active');
+            window.scrollTo(0, 0);
+
+            // เปิดส่วนค่าลดหย่อนการลงทุน
+            if (!document.getElementById('has_insurance').checked) {
+                document.getElementById('has_insurance').checked = true;
+                document.getElementById('insurance_section').style.display = 'block';
+            }
+
+            // เลื่อนไปยังช่องกรอก SSF
+            const ssfField = document.getElementById('ssf');
+            if (ssfField) {
+                ssfField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                ssfField.focus();
+            }
         }
     </script>
 
