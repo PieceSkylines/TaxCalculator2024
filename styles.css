@@ -1,0 +1,341 @@
+body {
+    font-family: 'Kanit', sans-serif;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+}
+/* Landing Page Styles */
+.landing-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    /* เปลี่ยนสีพื้นหลังเป็นไล่สีฟ้าอ่อน */
+    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+    color: #333333;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.landing-page h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+.landing-page p {
+    font-size: 1.3rem;
+    margin-bottom: 40px;
+    max-width: 600px;
+}
+.landing-page button {
+    padding: 18px 40px;
+    font-size: 1.6rem;
+    background-color: #ffffff;
+    color: #4a90e2;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+    font-family: 'Kanit', sans-serif; /* เพิ่มฟอนต์ให้ปุ่ม */
+}
+.landing-page button:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+}
+/* Container Styles */
+.container {
+    max-width: 800px;
+    margin: 30px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 16px; /* เพิ่มความโค้งมน */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* เพิ่มเงา */
+    box-sizing: border-box;
+    display: none; /* ซ่อน container โดยเริ่มต้น */
+    position: relative;
+}
+h1, h2, h3 {
+    color: #333333;
+    margin: 0 0 20px 0;
+}
+h1 {
+    text-align: center;
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+}
+label {
+    display: block;
+    margin-top: 20px;
+    font-weight: 600;
+    color: #555555;
+    font-size: 1.1rem;
+}
+input[type="text"], select {
+    width: 100%;
+    padding: 14px;
+    margin-top: 8px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1.1rem;
+}
+.info {
+    font-size: 1rem;
+    color: #777777;
+}
+button {
+    margin-top: 30px;
+    padding: 18px;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.6rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+    font-family: 'Kanit', sans-serif; /* เพิ่มฟอนต์ให้ปุ่ม */
+}
+button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+.deduction-section {
+    margin-top: 30px;
+    padding: 20px;
+    border-radius: 8px;
+}
+.section-personal {
+    background-color: #fef9e7;
+}
+.section-insurance {
+    background-color: #e8f8f5;
+}
+.section-investment {
+    background-color: #e0f7fa;
+}
+.section-donation {
+    background-color: #f9ebea;
+}
+.section-stimulus {
+    background-color: #e8daef;
+}
+.step-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+.step-content.active {
+    display: block;
+    opacity: 1;
+}
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+.navigation-buttons button {
+    width: 45%;
+    font-family: 'Kanit', sans-serif; /* เพิ่มฟอนต์ให้ปุ่มใน navigation */
+    margin: 5px;
+}
+.error {
+    color: red;
+    font-size: 0.9rem;
+    margin-left: 10px;
+}
+input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+/* Result Section */
+.step-content#step-4 h2 {
+    color: #28a745;
+    font-size: 2rem;
+    margin-top: 0;
+}
+.step-content#step-4 p {
+    font-size: 1.3rem;
+    color: #333333;
+}
+.step-content#step-4 .tax-amount {
+    font-size: 2.2rem;
+    color: #d9534f;
+    font-weight: bold;
+}
+/* Style for Effective Tax Rate */
+.step-content#step-4 .effective-tax-rate {
+    font-size: 2.2rem;
+    color: #28a745; /* Green color */
+    font-weight: bold;
+}
+/* Button to encourage more investment */
+.investment-button {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+    font-family: 'Kanit', sans-serif;
+    width: 100%;
+}
+.investment-button:hover {
+    background-color: #e0a800;
+    transform: scale(1.05);
+}
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5);
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    text-align: center;
+}
+.modal-content h2 {
+    margin-top: 0;
+}
+.modal-content ul {
+    text-align: left;
+    padding-left: 20px;
+}
+.modal-content button {
+    width: auto;
+    padding: 10px 20px;
+    font-size: 1.2rem;
+    margin-top: 20px;
+    border-radius: 50px;
+}
+#recommended-investments {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+}
+#recommended-investments h3 {
+    color: #007bff;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+#recommended-investments p {
+    font-size: 1.2rem;
+    color: #333333;
+}
+/* Stepper Styles */
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    position: relative;
+}
+.stepper::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+.stepper-step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+}
+.stepper-step-circle {
+    position: relative;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+}
+.stepper-step.active .stepper-step-circle {
+    background-color: #007bff;
+    color: #ffffff;
+    transform: scale(1.2);
+}
+.stepper-step-label {
+    font-size: 0.9rem;
+    color: #555555;
+}
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 20px auto;
+    }
+    h1 {
+        font-size: 2rem;
+    }
+    button {
+        font-size: 1.5rem;
+    }
+    label {
+        font-size: 1rem;
+    }
+    input[type="text"], select {
+        font-size: 1rem;
+    }
+    .checkbox-group {
+        font-size: 1rem;
+    }
+    .info {
+        font-size: 0.9rem;
+    }
+    .stepper-step-label {
+        font-size: 0.8rem;
+    }
+}
+@media (max-width: 480px) {
+    body {
+        font-size: 16px;
+    }
+    .container {
+        padding: 15px;
+    }
+    h1 {
+        font-size: 1.8rem;
+    }
+    button {
+        font-size: 1.3rem;
+    }
+    .stepper::before {
+        left: 5%;
+        right: 5%;
+    }
+}
