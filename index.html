@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา ปี 2567</title>
+    <!-- Meta viewport tag for responsive design -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Load Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- CSS Styles -->
+    <link rel="icon" href="favicon.ico">
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <!-- Landing Page -->
+    <div class="landing-page" id="landing-page">
+        <h1>ยินดีต้อนรับสู่โปรแกรมคำนวณภาษี ปี 2567</h1>
+        <p>เครื่องมือที่ช่วยคุณคำนวณภาษีเงินได้บุคคลธรรมดาอย่างง่ายดายและรวดเร็ว เพียงกรอกข้อมูลไม่กี่ขั้นตอน</p>
+        <button type="button" onclick="startCalculator()">เริ่มต้นคำนวณ</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container" id="main-container">
+        <h1>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา ปี 2567</h1>
+
+        <!-- Stepper (Progress Gauge) -->
+        <div class="stepper" id="stepper" data-current-step="1">
+            <div class="stepper-step active" data-step="1">
+                <div class="stepper-step-circle">1</div>
+                <div class="stepper-step-label">รายได้</div>
+            </div>
+            <div class="stepper-step" data-step="2">
+                <div class="stepper-step-circle">2</div>
+                <div class="stepper-step-label">ค่าใช้จ่าย</div>
+            </div>
+            <div class="stepper-step" data-step="3">
+                <div class="stepper-step-circle">3</div>
+                <div class="stepper-step-label">ค่าลดหย่อน</div>
+            </div>
+            <div class="stepper-step" data-step="4">
+                <div class="stepper-step-circle">4</div>
+                <div class="stepper-step-label">สรุปผลการคำนวณ</div>
+            </div>
+        </div>
+
+         <!-- Step 1: รายได้ -->
+         <div class="step-content active" id="step-1">
+            <h2>ขั้นตอนที่ 1: รายได้</h2>
+
+            <label>เลือกรูปแบบการกรอกข้อมูลรายได้:</label>
+            <div id="income_type_error" class="error"></div>
+
+            <!-- Annual Income Option -->
+            <div class="income-option">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="income_type_annual" name="income_type" value="annual">
+                    <label for="income_type_annual">รายได้รวมทั้งปี</label>
+                </div>
+                <div id="annual_income_section" style="display: none;">
+                    <label>รายได้ทั้งปีของคุณ (บาท): <span class="error" id="annual_income_error"></span></label>
+                    <input type="text" id="annual_income" inputmode="decimal">
+                </div>
+            </div>
+
+            <!-- Monthly Income Option -->
+            <div class="income-option">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="income_type_monthly" name="income_type" value="monthly">
+                    <label for="income_type_monthly">รายได้ต่อเดือน</label>
+                </div>
+                <div id="monthly_income_section" style="display: none;">
+                    <label>รายได้ต่อเดือนของคุณ (บาท): <span class="error" id="monthly_income_error"></span></label>
+                    <input type="text" id="monthly_income" inputmode="decimal">
+
+                    <label>โบนัสที่ได้รับในปีนี้ (บาท):</label>
+                    <input type="text" id="bonus_income" value="0" inputmode="decimal">
+                </div>
+            </div>
+
+            <!-- "รายได้อื่น ๆ" Section with Checkbox -->
+            <div class="checkbox-group">
+                <input type="checkbox" id="has_other_income">
+                <label for="has_other_income">รายได้อื่น ๆ</label>
+            </div>
+            <div id="other_income_section" style="display: none;">
+                <label>ระบุรายได้อื่น ๆ (บาท):</label>
+                <input type="text" id="other_income" value="0" inputmode="decimal">
+                <div class="info">กรุณากรอกเฉพาะตัวเลข</div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" onclick="prevStep(1)" disabled>ย้อนกลับ</button>
+                <button type="button" onclick="nextStep(1)">ถัดไป</button>
+            </div>
+        </div>
+
+        <!-- Step 2: ค่าใช้จ่าย -->
+        <div class="step-content" id="step-2">
+            <h2>ขั้นตอนที่ 2: ค่าใช้จ่าย</h2>
+            <p>ค่าใช้จ่ายหักเหมา 50% แต่ไม่เกิน 100,000 บาท จากรายได้รวมของคุณ</p>
+            <p>ค่าใช้จ่ายที่หักได้ของคุณคือ: <span id="expense_display">0</span> บาท</p>
+
+            <div class="navigation-buttons">
+                <button type="button" onclick="prevStep(2)">ย้อนกลับ</button>
+                <button type="button" onclick="nextStep(2)">ถัดไป</button>
+            </div>
+        </div>
+
+        <!-- Step 3: ค่าลดหย่อน -->
+        <div class="step-content" id="step-3">
+            <h2>ขั้นตอนที่ 3: ค่าลดหย่อน</h2>
+
+            <!-- Part 1: ค่าลดหย่อนภาษีส่วนตัวและครอบครัว -->
+            <div class="deduction-section section-personal">
+                <h3>1. ค่าลดหย่อนภาษีส่วนตัวและครอบครัว</h3>
+
+                <label>ค่าลดหย่อนส่วนตัว:</label>
+                <p>60,000 บาท</p>
+
+                <label>คุณมีคู่สมรสที่ไม่มีรายได้หรือไม่?</label>
+                <select id="spouse">
+                    <option value="no">ไม่มี</option>
+                    <option value="yes">มี</option>
+                </select>
+                <div class="info">ลดหย่อนได้ 60,000 บาท ถ้าคู่สมรสไม่มีรายได้</div>
+
+                <label>จำนวนบุตรชอบด้วยกฎหมาย:</label>
+                <select id="children_own">
+                    <!-- Options will be generated by JavaScript -->
+                </select>
+                <div class="info">ลดหย่อนบุตรชอบด้วยกฎหมายคนละ 30,000 บาท สำหรับบุตรคนที่ 1 และ 60,000 บาท สำหรับบุตรคนที่ 2 ขึ้นไป</div>
+
+                <label>จำนวนบุตรบุญธรรม:</label>
+                <select id="children_adopted">
+                    <!-- Options will be generated by JavaScript -->
+                </select>
+                <div class="info">ลดหย่อนบุตรบุญธรรมคนละ 30,000 บาท สูงสุดไม่เกิน 3 คน</div>
+
+                <!-- Removed Social Security Field from here -->
+
+                <label>บิดามารดาของคุณที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปี:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="your_father">
+                    <label for="your_father">บิดาของคุณ</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="your_mother">
+                    <label for="your_mother">มารดาของคุณ</label>
+                </div>
+            
+                <label>บิดามารดาของคู่สมรสที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปี:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="spouse_father">
+                    <label for="spouse_father">บิดาของคู่สมรส</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="spouse_mother">
+                    <label for="spouse_mother">มารดาของคู่สมรส</label>
+                </div>
+
+                <label>จำนวนผู้พิการหรือทุพพลภาพที่คุณอุปการะ:</label>
+                <select id="disabled_persons">
+                    <!-- Options will be generated by JavaScript -->
+                </select>
+                <div class="info">ลดหย่อนได้คนละ 60,000 บาท</div>
+            </div>
+
+            <!-- ส่วนที่เหลือจะแสดงเมื่อผู้ใช้เลือกว่ามีค่าลดหย่อนในส่วนนั้น -->
+            <h3>เลือกค่าลดหย่อนเพิ่มเติมที่คุณมี:</h3>
+            <div class="checkbox-group">
+                <input type="checkbox" id="has_insurance">
+                <label for="has_insurance">2. ค่าลดหย่อนภาษีกลุ่มประกัน เงินออม และการลงทุน</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="has_donation">
+                <label for="has_donation">3. ค่าลดหย่อนภาษีกลุ่มเงินบริจาค</label>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="has_stimulus">
+                <label for="has_stimulus">4. ค่าลดหย่อนกลุ่มกระตุ้นเศรษฐกิจของรัฐ</label>
+            </div>
+
+            <!-- Part 2: ค่าลดหย่อนภาษีกลุ่มประกัน เงินออม และการลงทุน -->
+            <div class="deduction-section section-insurance" id="insurance_section" style="display: none;">
+                <h3>2. ค่าลดหย่อนภาษีกลุ่มประกัน เงินออม และการลงทุน</h3>
+
+                <!-- Added Social Security Checkbox and Section Here -->
+                <div class="checkbox-group">
+                    <input type="checkbox" id="has_social_security">
+                    <label for="has_social_security">คุณส่งเงินสมทบประกันสังคมหรือไม่?</label>
+                </div>
+                <div id="social_security_section" style="display: none;">
+                    <label>เงินสมทบประกันสังคมที่คำนวณได้ (บาท):</label>
+                    <input type="text" id="social_security" readonly>
+                    <div class="info">ระบบจะคำนวณให้โดยอัตโนมัติ (สูงสุดไม่เกิน 9,000 บาทต่อปี)</div>
+                </div>
+                <!-- End of Social Security Section -->
+
+                <label>เบี้ยประกันชีวิตและประกันสะสมทรัพย์ (บาท):</label>
+                <input type="text" id="life_insurance" value="0" inputmode="decimal">
+                <span class="error" id="life_insurance_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
+
+                <label>เบี้ยประกันสุขภาพ (บาท):</label>
+                <input type="text" id="health_insurance" value="0" inputmode="decimal">
+                <span class="error" id="health_insurance_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 25,000 บาท และเมื่อรวมกับเบี้ยประกันชีวิตต้องไม่เกิน 100,000 บาท</div>
+
+                <label>เบี้ยประกันสุขภาพบิดามารดา (บาท):</label>
+                <input type="text" id="parent_health_insurance" value="0" inputmode="decimal">
+                <span class="error" id="parent_health_insurance_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 15,000 บาท</div>
+
+                <label>เงินสมทบกองทุนสำรองเลี้ยงชีพ (PVD) (บาท):</label>
+                <input type="text" id="pvd" value="0" inputmode="decimal">
+                <span class="error" id="pvd_error"></span>
+                <div class="info">ลดหย่อนได้ 15% ของเงินได้ สูงสุดไม่เกิน 500,000 บาท</div>
+
+                <label>เบี้ยประกันชีวิตแบบบำนาญ (บาท):</label>
+                <input type="text" id="pension_insurance" value="0" inputmode="decimal">
+                <span class="error" id="pension_insurance_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
+
+                <label>กองทุนรวมเพื่อการออม (SSF) (บาท):</label>
+                <input type="text" id="ssf" value="0" inputmode="decimal">
+                <span class="error" id="ssf_error"></span>
+                <div class="info">ลดหย่อนได้ 30% ของเงินได้ สูงสุดไม่เกิน 200,000 บาท</div>
+
+                <label>กองทุนรวมเพื่อการเลี้ยงชีพ (RMF) (บาท):</label>
+                <input type="text" id="rmf" value="0" inputmode="decimal">
+                <span class="error" id="rmf_error"></span>
+                <div class="info">ลดหย่อนได้ 30% ของเงินได้ สูงสุดไม่เกิน 500,000 บาท</div>
+
+                <label>กองทุนรวมไทยเพื่อความยั่งยืน (Thai ESG) (บาท):</label>
+                <input type="text" id="thaiesg" value="0" inputmode="decimal">
+                <span class="error" id="thaiesg_error"></span>
+                <div class="info">ลดหย่อนได้ 30% ของเงินได้ สูงสุดไม่เกิน 300,000 บาท</div>
+
+                <label>เงินลงทุนธุรกิจ Social Enterprise (บาท):</label>
+                <input type="text" id="social_enterprise" value="0" inputmode="decimal">
+                <span class="error" id="social_enterprise_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
+
+                <label>เงินสมทบกองทุนการออมแห่งชาติ (กอช.) (บาท):</label>
+                <input type="text" id="nsf" value="0" inputmode="decimal">
+                <span class="error" id="nsf_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 13,200 บาท</div>
+            </div>
+            
+            <!-- Part 3: ค่าลดหย่อนภาษีกลุ่มเงินบริจาค -->
+            <div class="deduction-section section-donation" id="donation_section" style="display: none;">
+                <h3>3. ค่าลดหย่อนภาษีกลุ่มเงินบริจาค</h3>
+
+                <label>เงินบริจาคทั่วไป (บาท):</label>
+                <input type="text" id="donation" value="0" inputmode="decimal">
+                <span class="error" id="donation_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 10% ของเงินได้หลังหักลดหย่อน</div>
+
+                <label>เงินบริจาคเพื่อการศึกษา กีฬา พัฒนาสังคม และสถานพยาบาลของรัฐ (บาท):</label>
+                <input type="text" id="donation_education" value="0" inputmode="decimal">
+                <span class="error" id="donation_education_error"></span>
+                <div class="info">ลดหย่อนได้ 2 เท่าของเงินบริจาคจริง สูงสุดไม่เกิน 10% ของเงินได้หลังหักลดหย่อน</div>
+
+                <label>เงินบริจาคพรรคการเมือง (บาท):</label>
+                <input type="text" id="donation_political" value="0" inputmode="decimal">
+                <span class="error" id="donation_political_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 10,000 บาท</div>
+            </div>
+
+            <!-- Part 4: ค่าลดหย่อนกลุ่มกระตุ้นเศรษฐกิจของรัฐ -->
+            <div class="deduction-section section-stimulus" id="stimulus_section" style="display: none;">
+                <h3>4. ค่าลดหย่อนกลุ่มกระตุ้นเศรษฐกิจของรัฐ</h3>
+
+                <label>Easy e-Receipt 2567 (บาท):</label>
+                <input type="text" id="easy_ereceipt" value="0" inputmode="decimal">
+                <span class="error" id="easy_ereceipt_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 50,000 บาท</div>
+
+                <label>ค่าลดหย่อนเที่ยวเมืองรอง 2567 (บาท):</label>
+                <input type="text" id="local_travel" value="0" inputmode="decimal">
+                <span class="error" id="local_travel_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 15,000 บาท</div>
+
+                <label>ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย (บาท):</label>
+                <input type="text" id="home_loan_interest" value="0" inputmode="decimal">
+                <span class="error" id="home_loan_interest_error"></span>
+                <div class="info">ลดหย่อนได้ตามที่จ่ายจริง สูงสุดไม่เกิน 100,000 บาท</div>
+
+                <label>ค่าสร้างบ้านใหม่ 2567-2568 (บาท):</label>
+                <input type="text" id="new_home" value="0" inputmode="decimal">
+                <span class="error" id="new_home_error"></span>
+                <div class="info">ลดหย่อนได้ 10,000 บาท ต่อค่าก่อสร้าง 1 ล้านบาท สูงสุดไม่เกิน 100,000 บาท</div>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" onclick="prevStep(3)">ย้อนกลับ</button>
+                <button type="button" onclick="calculateTax()">คำนวณภาษี</button>
+            </div>
+        </div>
+
+        <!-- Step 4: Result Section -->
+        <div class="step-content" id="step-4" style="display: none;">
+            <h2>สรุปผลการคำนวณ</h2>
+            <p><strong>รายได้ทั้งปี:</strong> <span id="result_total_income">0</span> บาท</p>
+            <p><strong>ค่าใช้จ่ายที่หักได้:</strong> <span id="result_expense">0</span> บาท</p>
+            <p><strong>ค่าลดหย่อน:</strong> <span id="result_deductions">0</span> บาท</p>
+            <p><strong>เงินได้สุทธิ:</strong> <span id="result_net_income">0</span> บาท</p>
+            <p><strong>ภาษีที่ต้องชำระ:</strong> <span class="tax-amount" id="result_tax">0 บาท</span></p>
+            <!-- Added Effective Tax Rate with styling -->
+            <p><strong>อัตราภาษีที่แท้จริง (Effective Tax Rate):</strong> <span class="effective-tax-rate" id="result_effective_tax_rate">0%</span></p>
+            
+            <!-- Add Recommended Investment Amounts for Maximum Deductions -->
+            <div id="recommended-investments">
+                <h3>คำแนะนำการซื้อเพื่อสิทธิ์ลดหย่อนเพิ่มเติม</h3>
+                <p><strong>SSF ที่ซื้อได้สูงสุด:</strong> <span id="max_ssf">0</span></p>
+                <p><strong>RMF ที่ซื้อได้สูงสุด:</strong> <span id="max_rmf">0</span></p>
+                <p><strong>Thai ESG ที่ซื้อได้สูงสุด:</strong> <span id="max_thaiesg">0</span></p>
+                <!-- Changed Investment Button Label and Always Visible -->
+                <button type="button" id="investment_button" class="investment-button" onclick="goToInvestmentSection()">ลงทุน SSF RMF ThaiESG เพิ่ม เพื่อประหยัดภาษีให้มากขึ้น</button>
+            </div>
+
+            <div class="navigation-buttons">
+                <button type="button" onclick="editData()">แก้ไขข้อมูล</button>
+                <button type="button" onclick="resetData()">เริ่มใหม่</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Error Messages -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <h2>พบข้อผิดพลาด</h2>
+            <ul id="errorList"></ul>
+            <button type="button" onclick="closeErrorModal()">รับทราบ</button>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
