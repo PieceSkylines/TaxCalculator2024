@@ -297,7 +297,7 @@ input[type="checkbox"] {
 .stepper::before {
     content: '';
     position: absolute;
-    top: 30%;
+    top: 26%;
     left: 5%;
     right: 5%;
     height: 4px;
@@ -309,7 +309,7 @@ input[type="checkbox"] {
 .stepper::after {
     content: '';
     position: absolute;
-    top: 30%;
+    top: 26%;
     left: 0%;
     height: 4px;
     background-color: #007bff;
